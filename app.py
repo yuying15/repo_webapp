@@ -23,8 +23,8 @@ def insights():
     # Generate insights
     # Example: Distribution of 'Severity of Illness'
     plt.figure(figsize=(10, 6))
-    # sns.countplot(data['Severity of Illness'])
-    sns.countplot(x='Severity of Illness', data=data)
+    sns.countplot(data['Severity of Illness'])
+    # sns.countplot(x='Severity of Illness', data=data)
     plt.title('Distribution of Severity of Illness')
     plt.xlabel('Severity of Illness')
     plt.ylabel('Count')
