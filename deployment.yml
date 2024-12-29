@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: webapp-demo
-        image: localhost:5000/webappdemo:latest  # Use the local registry image
+        image: default-route-openshift-image-registry.apps.rm2.thpm.p1.openshiftapps.com/webappdemo:latest  # Update with your OpenShift registry
         ports:
         - containerPort: 5000
 ---
@@ -29,4 +29,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 5000
-  type: LoadBalancer
+  type: ClusterIP  # Changed from LoadBalancer to ClusterIP
