@@ -38,5 +38,5 @@ def insights():
     return render_template("insights.html", plot_url=plot_url)
 
 if __name__ == "__main__":
-    # app.run(host="0.0.0.0", port=5000)
-    app.run()
+    app.run(host="0.0.0.0", port=8080)
+    # app.run()
