@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-demo-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp-demo
+  template:
+    metadata:
+      labels:
+        app: webapp-demo
+    spec:
+      containers:
+      - name: webapp-demo
+        image: localhost:5000/webappdemo:latest  # Use the local registry image
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-demo-service
+spec:
+  selector:
+    app: webapp-demo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: LoadBalancer
