@@ -1,0 +1,86 @@
+# Import necessary libraries
+import psycopg2
+from psycopg2 import sql
+import pandas as pd
+
+# Define connection parameters
+host = 'dpg-ctpgf2t2ng1s73drs8hg-a.oregon-postgres.render.com'
+port = '5432'
+dbname = 'bda_2dog'
+user = 'bda_2dog_user'
+password = 'CfjVbrAnbPIFtbxHeN1z6tAzPbq4yJal'
+
+# Create a connection to the PostgreSQL database
+try:
+    conn = psycopg2.connect(
+        host=host,
+        port=port,
+        dbname=dbname,
+        user=user,
+        password=password
+    )
+    print("Connection successful")
+except Exception as e:
+    print(f"Connection failed: {e}")
+
+# Function to load DataFrame into PostgreSQL
+def load_dataframe_to_postgresql(df, table_name):
+    try:
+        # Create a cursor object
+        cursor = conn.cursor()
+        
+        # Create table if not exists
+        create_table_query = f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            {', '.join([f'{col} TEXT' for col in df.columns])}
+        );
+        """
+        cursor.execute(create_table_query)
+        
+        # Insert DataFrame records one by one
+        for i, row in df.iterrows():
+            insert_query = f"INSERT INTO {table_name} VALUES ({', '.join(['%s'] * len(row))})"
+            cursor.execute(insert_query, tuple(row))
+        
+        # Commit the transaction
+        conn.commit()
+        print(f"Data loaded successfully into {table_name}")
+    except Exception as e:
+        print(f"Failed to load data: {e}")
+
+# Function to verify data in PostgreSQL
+def verify_data_in_postgresql(table_name):
+    try:
+        # Create a cursor object
+        cursor = conn.cursor()
+        
+        # Query to select all data from the table
+        select_query = f"SELECT * FROM {table_name};"
+        cursor.execute(select_query)
+        
+        # Fetch all rows from the executed query
+        rows = cursor.fetchall()
+        
+        # Print the rows
+        for row in rows:
+            print(row)
+    except Exception as e:
+        print(f"Failed to verify data: {e}")
+
+# Generate sample data
+data = {
+    'id': ['1', '2', '3'],
+    'name': ['Alice', 'Bob', 'Charlie'],
+    'age': ['25', '30', '35'],
+    'city': ['New York', 'Los Angeles', 'Chicago']
+}
+df = pd.DataFrame(data)
+
+# Load the sample data into PostgreSQL
+load_dataframe_to_postgresql(df, 'sample_table')
+
+# Verify the data in PostgreSQL
+verify_data_in_postgresql('sample_table')
+
+# Close the connection
+conn.close()
