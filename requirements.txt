@@ -5,3 +5,4 @@ matplotlib==3.9.2
 seaborn==0.13.2
 numpy==1.26.4
 gunicorn==20.1.0
+psycopg2-binary==2.9.7
