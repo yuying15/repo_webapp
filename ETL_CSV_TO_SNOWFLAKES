@@ -1,0 +1,74 @@
+# Import necessary libraries
+import pandas as pd
+import snowflake.connector
+from snowflake.connector.pandas_tools import write_pandas
+import openpyxl  # Ensure openpyxl is installed
+
+account = 'nohobhx-hl27063'
+user = 'bdavic'
+password = 'Hznmb2JKdpXw88x'
+# warehouse = 'your_warehouse'  # Replace with your actual warehouse
+database = 'BDA_VIC'
+schema = 'public'
+role = 'ACCOUNTADMIN'
+
+# Define Snowflake options
+snowflake_options = {
+    "sfURL": f"{account}.snowflakecomputing.com",
+    "sfUser": user,
+    "sfPassword": password,
+    "sfDatabase": database,
+    "sfSchema": schema,
+    # "sfWarehouse": warehouse,
+    "sfRole": role
+}
+
+def load_all_sheets_from_excel(file_path: str) -> dict:
+    """Load all sheets from an Excel file into a dictionary of DataFrames."""
+    excel_file = pd.ExcelFile(file_path)
+    dataframes = {}
+    for sheet_name in excel_file.sheet_names:
+        df = pd.read_excel(file_path, sheet_name=sheet_name)
+        # Replace spaces with underscores in column names
+        df.columns = [col.replace(' ', '_') for col in df.columns]
+        print(df.columns)
+        sheet_name=sheet_name.replace(' ', '_')
+        dataframes[sheet_name] = df
+    return dataframes
+
+try:
+    # Create Snowflake connection
+    conn = snowflake.connector.connect(
+        user=user,
+        password=password,
+        account=account,
+        database=database,
+        schema=schema,
+        role=role
+    )
+    
+    # Load Excel sheets
+    excel_file_path = "AdventureWorks Sales.xlsx"
+    dataframes = load_all_sheets_from_excel(excel_file_path)
+    print("Loading excel done")
+    
+    # Write each DataFrame to Snowflake
+    for sheet_name, df in dataframes.items():
+        # Replace spaces with underscores in table names
+        table_name = sheet_name.replace(' ', '_')
+        print(f"Writing sheet {sheet_name} to Snowflake...")
+        success, nchunks, nrows, _ = write_pandas(
+            conn=conn,
+            df=df,
+            table_name=table_name,
+            database=database,
+            schema=schema,
+            auto_create_table=True
+        )
+        print(f"Sheet {sheet_name}: {nrows} rows written successfully")
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+finally:
+    if 'conn' in locals():
+        conn.close()

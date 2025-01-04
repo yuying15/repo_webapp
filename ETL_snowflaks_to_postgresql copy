@@ -1,0 +1,61 @@
+# Import necessary libraries
+from pyspark.sql import SparkSession
+import os
+
+# Set environment variables for Spark
+# os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2,net.snowflake:snowflake-jdbc:3.13.3,org.postgresql:postgresql:42.2.23 pyspark-shell'
+
+# Define Snowflake connection parameters
+account = 'nohobhx-hl27063'
+user = 'bdavic'
+password = 'Hznmb2JKdpXw88x'
+warehouse = 'your_warehouse'  # Replace with your actual warehouse
+database = 'BDA_VIC'
+schema = 'public'
+role = 'ACCOUNTADMIN'
+
+# Define PostgreSQL connection parameters
+pg_url = 'jdbc:postgresql://dpg-ctpgf2t2ng1s73drs8hg-a.oregon-postgres.render.com:5432/bda_2dog'
+pg_properties = {
+    'user': 'bda_2dog_user',
+    'password': 'CfjVbrAnbPIFtbxHeN1z6tAzPbq4yJal',
+    'driver': 'org.postgresql.Driver'
+}
+
+# Create a Spark session
+spark = SparkSession.builder \
+    .appName("Snowflake to PostgreSQL") \
+    .config("spark.jars.packages", "net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2,net.snowflake:snowflake-jdbc:3.13.3,org.postgresql:postgresql:42.2.23,com.crealytics:spark-excel_2.12:0.13.5") \
+    .getOrCreate()
+
+# Define Snowflake options
+snowflake_options = {
+    "sfURL": f"{account}.snowflakecomputing.com",
+    "sfUser": user,
+    "sfPassword": password,
+    "sfDatabase": database,
+    "sfSchema": schema,
+    # "sfWarehouse": warehouse,
+    "sfRole": role
+}
+
+def load_all_sheets_from_excel(file_path: str) -> dict:
+    """Load all sheets from an Excel file into a dictionary of DataFrames."""
+    sheet_names = spark.read \
+        .format("com.crealytics.spark.excel") \
+        .option("useHeader", "true") \
+        .option("inferSchema", "true") \
+        .load(file_path) \
+        .schema.names
+    dataframes = {}
+    for sheet_name in sheet_names:
+        df = spark.read \
+            .format("com.crealytics.spark.excel") \
+            .option("dataAddress", f"'{sheet_name}'") \
+            .option("useHeader", "true") \
+            .option("inferSchema", "true") \
+            .load(file_path)
+        dataframes[sheet_name] = df
+    return dataframes
+
+print('eqwewqeqweqwwwwww#############@#')
