@@ -14,7 +14,7 @@ port = '5432'
 dbname = 'bda_2dog'
 user = 'bda_2dog_user'
 password = 'CfjVbrAnbPIFtbxHeN1z6tAzPbq4yJal'
-
+    
 def get_db_connection():
     conn = psycopg2.connect(
         host=host,
